@@ -1,6 +1,8 @@
+; loaded in memory here
 org 0x7C00
 bits 16
 
+; just a shortcut for \n. thank you internet
 %define ENDL 0x0D, 0x0A
 
 start:
@@ -16,7 +18,8 @@ puts:
     push bx
     
 .loop:
-    lodsb      ; loads next char in al
+    ; loads [si] into al. increments si
+    lodsb
     or al, al   ; verify if next char is NULL
     jz .done
 
@@ -43,7 +46,7 @@ main:
 
     ; setup stack
     mov ss, ax          ; move stack segment
-    mov sp, 0x7C00     ; move stack pointer
+    mov sp, 0x7C00     ; move stack pointer so we don't overwrite
 
     ; print message
     mov si, msg_hello
@@ -58,6 +61,7 @@ main:
 
 msg_hello: db "Hello world!", ENDL, 0
 
-; the os will expect the last 2 bits of the first section (512 bits) of memory to be 5
+; the bios will expect the last 2 bits of the first section (512 bits) of memory to be 5
+; it just looks for this signature so that it knows it is bootable
 times 510-($-$$) db 0
 dw 0AA55h
