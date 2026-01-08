@@ -40,7 +40,7 @@ main:
 
     ; setup data segmentes
     mov ax, 0
-    ; can't write to ds, es dirrectly
+    ; can't write to ds(data segment), es dirrectly
     mov ds, ax
     mov es, ax
 

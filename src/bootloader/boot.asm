@@ -5,9 +5,9 @@ bits 16
 ; just a shortcut for \n. thank you internet
 %define ENDL 0x0D, 0x0A
 
-;
-; FAT12 header. taken directly for the FAT documentation
-;
+; 
+; FAT12 header. taken directly from the FAT documentation
+; this is necessary because i will overwrite the FAT image with my bootloader
 jmp short start
 nop
 	
@@ -33,6 +33,8 @@ ebr_volume_id:              db 12h, 34h, 56h, 78h   ; serial number, value doesn
 ebr_volume_label:           db 'NANOBYTE OS'        ; 11 bytes, padded with spaces
 ebr_system_id:              db 'FAT12   '           ; 8 bytes
 
+
+
 ;
 ; code starts here
 ;
@@ -47,7 +49,7 @@ puts:
 	push si
 	push ax
 	push bx
-	
+
 .loop:
 	; loads [si] into al. increments si
 	lodsb
@@ -79,10 +81,10 @@ main:
 	mov ss, ax          ; move stack segment
 	mov sp, 0x7C00     ; move stack pointer so we don't overwrite
 
-    ; read something from floppy disk
     ; BIOS should set DL to drive number
     mov [ebr_drive_number], dl
 
+    ; read something from floppy disk
     mov ax, 1                   ; LBA=1, second sector from disk
     mov cl, 1                   ; 1 sector to read
     mov bx, 0x7E00              ; data should be after the bootloader
@@ -117,15 +119,14 @@ wait_key_and_reboot:
 ;
 
 ;
-; Converts an LBA address to a CHS address
+; Converts an LBA(Logical Block Adress) address 
+; to a CHS(Cylinder Head Sector) address
 ; Parameters:
 ;   - ax: LBA address
 ; Returns:
 ;   - cx [bits 0-5]: sector number
 ;   - cx [bits 6-15]: cylinder
 ;   - dh: head
-;
-
 lba_to_chs:
 	push ax
 	push dx
@@ -218,13 +219,11 @@ disk_read:
     pop ax                             ; restore registers modified
     ret
 
+
 ;
-;
-;;
 ; Resets disk controller
 ; Parameters:
 ;   dl: drive number
-;
 disk_reset:
     pusha
     mov ah, 0
@@ -236,6 +235,7 @@ disk_reset:
 
 msg_hello:              db 'Hello world!', ENDL, 0
 msg_read_failed:        db 'Read from disk failed!', ENDL, 0
+msg_kernel_not_found:   db 'KERNEL.BIN file not found!', ENDL, 0
 
 ; the bios will expect the last 2 bits of the first section (512 bits) of memory to be 5
 ; it just looks for this signature so that it knows it is bootable
